@@ -2870,11 +2870,22 @@
     return Array.from(new Set([...fromCheckboxes, ...fromChips]));
   }
 
+  // The price slider's HTML default (max=8000) is narrower than the full catalog
+  // price range (up to 9 400 DA). Mirrors the same convention as activeCategories():
+  // until the shopper actually moves the slider, price does not filter anything.
+  let priceFilterTouched = false;
+
   function applyProductFilters() {
     const desktopQuery = (document.getElementById('smart-search')?.value || '').trim().toLowerCase();
     const mobileQuery = (document.getElementById('smart-search-mobile')?.value || '').trim().toLowerCase();
     const query = desktopQuery || mobileQuery;
     const categories = activeCategories(); // empty array = no category filter = show all
+
+    // ---- Price range (from the dual-thumb slider, if present) ----
+    const priceMinEl = document.getElementById('price-min');
+    const priceMaxEl = document.getElementById('price-max');
+    const priceMin = priceMinEl ? parseInt(priceMinEl.value, 10) : null;
+    const priceMax = priceMaxEl ? parseInt(priceMaxEl.value, 10) : null;
 
     let visibleCount = 0;
     document.querySelectorAll('#product-grid > .product-card').forEach(card => {
@@ -2882,7 +2893,8 @@
       if (!p) return;
       const matchesQuery = !query || p.title.toLowerCase().includes(query) || p.category.toLowerCase().includes(query);
       const matchesCategory = categories.length === 0 || categories.includes(p.category);
-      const show = matchesQuery && matchesCategory;
+      const matchesPrice = !priceFilterTouched || ((priceMin === null || p.price >= priceMin) && (priceMax === null || p.price <= priceMax));
+      const show = matchesQuery && matchesCategory && matchesPrice;
       card.classList.toggle('hidden', !show);
       if (show) visibleCount++;
     });
@@ -3509,7 +3521,7 @@
     document.getElementById('land-phone-error').classList.toggle('hidden', phoneOk);
     if (!name || !phoneOk || !wilayaCode || !commune || !address) {
       if (name && phoneOk && (!commune || !wilayaCode)) {
-        alert('Merci de sélectionner votre wilaya et votre commune.');
+        showToast('Merci de sélectionner votre wilaya et votre commune.', 'error');
       }
       return;
     }
@@ -3796,9 +3808,14 @@
       minLabel.value = minVal.toLocaleString('fr-FR');
       maxLabel.value = maxVal.toLocaleString('fr-FR');
     }
-    min.addEventListener('input', update);
-    max.addEventListener('input', update);
-    update();
+    function updateAndFilter() {
+      priceFilterTouched = true;
+      update();
+      if (typeof applyProductFilters === 'function') applyProductFilters();
+    }
+    min.addEventListener('input', updateAndFilter);
+    max.addEventListener('input', updateAndFilter);
+    update(); // initial paint only — does not filter, so the default slider value never hides products on first load
   })();
 
   // ---- Language / RTL switch ----
@@ -4263,12 +4280,12 @@
     if (isSubmittingOrder) return; // ignore extra clicks while a request is already running
 
     if (typeof cartItemCount === 'function' && cartItemCount() === 0) {
-      alert('Votre panier est vide.');
+      showToast('Votre panier est vide.', 'error');
       return;
     }
     const wilayaCode = document.getElementById('wilaya-select').value;
     if (!wilayaCode) {
-      alert('Veuillez sélectionner votre wilaya de livraison.');
+      showToast('Veuillez sélectionner votre wilaya de livraison.', 'error');
       return;
     }
 
@@ -4280,7 +4297,7 @@
     const deliveryMode = deliveryTypeInput ? deliveryTypeInput.value : 'home';
 
     if (!name || !phone || !commune || !address) {
-      alert('Merci de compléter tous les champs du formulaire de livraison.');
+      showToast('Merci de compléter tous les champs du formulaire de livraison.', 'error');
       return;
     }
 
