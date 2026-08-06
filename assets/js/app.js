@@ -1,7 +1,6 @@
-```javascript
 /* =========================================================
    assets/js/app.js
-   Phase 1 Step 1 — infrastructure placeholder only.
+   Phase 1 Step 2 — application entry point (bootstrap only).
    This file does NOT yet contain any business logic.
    All existing functionality (cart, checkout, filters, B2B,
    AI chat, landing page, Supabase) still lives inline in
@@ -11,5 +10,6 @@
    in Phase 2, per FINAL_REFACTOR_BLUEPRINT.md.
 ========================================================= */
 
+import './state.js';
+
 console.log("Dar&Deco Phase 1 initialized");
-```
