@@ -2436,60 +2436,10 @@
     });
   }
 
-  // =========================================================
-  // LIVE PRODUCT FILTERING (search bar + category checkboxes/chips)
-  // =========================================================
-  function activeCategories() {
-    const fromCheckboxes = Array.from(document.querySelectorAll('.category-filter-checkbox:checked')).map(el => el.dataset.category);
-    const fromChips = Array.from(document.querySelectorAll('.category-filter-chip.chip-active')).map(el => el.dataset.category);
-    return Array.from(new Set([...fromCheckboxes, ...fromChips]));
-  }
-
   // The price slider's HTML default (max=8000) is narrower than the full catalog
   // price range (up to 9 400 DA). Mirrors the same convention as activeCategories():
   // until the shopper actually moves the slider, price does not filter anything.
   let priceFilterTouched = false;
-
-  function applyProductFilters() {
-    const desktopQuery = (document.getElementById('smart-search')?.value || '').trim().toLowerCase();
-    const mobileQuery = (document.getElementById('smart-search-mobile')?.value || '').trim().toLowerCase();
-    const query = desktopQuery || mobileQuery;
-    const categories = activeCategories(); // empty array = no category filter = show all
-
-    // ---- Price range (from the dual-thumb slider, if present) ----
-    const priceMinEl = document.getElementById('price-min');
-    const priceMaxEl = document.getElementById('price-max');
-    const priceMin = priceMinEl ? parseInt(priceMinEl.value, 10) : null;
-    const priceMax = priceMaxEl ? parseInt(priceMaxEl.value, 10) : null;
-
-    let visibleCount = 0;
-    document.querySelectorAll('#product-grid > .product-card').forEach(card => {
-      const p = PRODUCTS[card.dataset.pid];
-      if (!p) return;
-      const matchesQuery = !query || p.title.toLowerCase().includes(query) || p.category.toLowerCase().includes(query);
-      const matchesCategory = categories.length === 0 || categories.includes(p.category);
-      const matchesPrice = !priceFilterTouched || ((priceMin === null || p.price >= priceMin) && (priceMax === null || p.price <= priceMax));
-      const show = matchesQuery && matchesCategory && matchesPrice;
-      card.classList.toggle('hidden', !show);
-      if (show) visibleCount++;
-    });
-
-    const noResults = document.getElementById('no-results-msg');
-    const loadMoreWrap = document.getElementById('load-more-wrap');
-    if (noResults) {
-      noResults.classList.toggle('hidden', visibleCount > 0);
-      noResults.classList.toggle('flex', visibleCount === 0);
-    }
-    if (loadMoreWrap) loadMoreWrap.classList.toggle('hidden', visibleCount === 0);
-
-    const resultsCountEl = document.getElementById('results-count');
-    if (resultsCountEl) {
-      const lang = document.documentElement.lang === 'ar' ? 'ar' : 'fr';
-      const template = dict[lang].cat_results_dynamic || 'Affichage de {n} produit(s)';
-      resultsCountEl.textContent = template.replace('{n}', visibleCount);
-    }
-  }
-
 
   function downloadProforma() {
     if (cartItemCount() === 0) {
@@ -3211,26 +3161,6 @@
       document.body.style.overflow = '';
       setTimeout(() => overlay.classList.add('hidden'), 300);
     }
-  }
-
-  // ---- Color swatch toggle (multi-select) ----
-  function toggleSwatch(el) {
-    el.classList.toggle('active');
-    trackEvent('filter_change', {
-      type: 'color',
-      value: el.dataset.color || el.getAttribute('aria-label') || null,
-      active: el.classList.contains('active')
-    });
-  }
-
-  // ---- Filter/category chip toggle (multi-select) ----
-  function toggleChip(el) {
-    el.classList.toggle('chip-active');
-    trackEvent('filter_change', {
-      type: 'material_or_category',
-      value: el.textContent.trim(),
-      active: el.classList.contains('chip-active')
-    });
   }
 
   // ---- Dual-thumb price range slider ----
