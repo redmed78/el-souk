@@ -1,6 +1,6 @@
 /* =========================================================
    assets/js/app.js
-   Phase 1 Step 5 — application entry point (bootstrap only).
+   Phase 1 Step 6 — application entry point (bootstrap only).
    This file does NOT yet contain any business logic.
    All existing functionality (cart, checkout, filters, B2B,
    AI chat, landing page, Supabase) still lives inline in
@@ -16,6 +16,7 @@ import { WILAYAS, ZONE_FEES, COMMUNES_BY_WILAYA } from './data/wilayas.js';
 import { dict } from './data/translations.js';
 import { addToCart, renderCart, changeCartQty, removeFromCart, cartSubtotal, cartItemCount, toggleCartDrawer } from './modules/cart.js';
 import { openProductModal, closeProductModal, changeModalQty, modalAddToCart, modalBuyNow, renderModalPricing } from './modules/modal.js';
+import { applyProductFilters, toggleSwatch, toggleChip, activeCategories } from './modules/filters.js';
 
 // Compatibility bridge: index.html's existing inline functions
 // (addToCart, openProductModal, renderCart, applyProductFilters,
@@ -46,5 +47,12 @@ window.changeModalQty = changeModalQty;
 window.modalAddToCart = modalAddToCart;
 window.modalBuyNow = modalBuyNow;
 window.renderModalPricing = renderModalPricing;
+
+// Filters module functions, exposed for index.html's existing
+// onclick/onchange="..." attributes (e.g. onchange="...applyProductFilters();").
+window.applyProductFilters = applyProductFilters;
+window.toggleSwatch = toggleSwatch;
+window.toggleChip = toggleChip;
+window.activeCategories = activeCategories;
 
 console.log("Dar&Deco Phase 1 initialized");
