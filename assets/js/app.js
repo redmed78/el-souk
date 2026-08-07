@@ -1,6 +1,6 @@
 /* =========================================================
    assets/js/app.js
-   Phase 1 Step 6 — application entry point (bootstrap only).
+   Phase 1 Step 7 — application entry point (bootstrap only).
    This file does NOT yet contain any business logic.
    All existing functionality (cart, checkout, filters, B2B,
    AI chat, landing page, Supabase) still lives inline in
@@ -17,6 +17,7 @@ import { dict } from './data/translations.js';
 import { addToCart, renderCart, changeCartQty, removeFromCart, cartSubtotal, cartItemCount, toggleCartDrawer } from './modules/cart.js';
 import { openProductModal, closeProductModal, changeModalQty, modalAddToCart, modalBuyNow, renderModalPricing } from './modules/modal.js';
 import { applyProductFilters, toggleSwatch, toggleChip, activeCategories } from './modules/filters.js';
+import { setLang } from './modules/language.js';
 
 // Compatibility bridge: index.html's existing inline functions
 // (addToCart, openProductModal, renderCart, applyProductFilters,
@@ -54,5 +55,9 @@ window.applyProductFilters = applyProductFilters;
 window.toggleSwatch = toggleSwatch;
 window.toggleChip = toggleChip;
 window.activeCategories = activeCategories;
+
+// Language module function, exposed for index.html's existing
+// onclick="..." attributes (e.g. onclick="setLang('ar')").
+window.setLang = setLang;
 
 console.log("Dar&Deco Phase 1 initialized");
