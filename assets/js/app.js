@@ -1,6 +1,6 @@
 /* =========================================================
    assets/js/app.js
-   Phase 1 Step 4 — application entry point (bootstrap only).
+   Phase 1 Step 5 — application entry point (bootstrap only).
    This file does NOT yet contain any business logic.
    All existing functionality (cart, checkout, filters, B2B,
    AI chat, landing page, Supabase) still lives inline in
@@ -15,6 +15,7 @@ import { PRODUCTS } from './data/products.js';
 import { WILAYAS, ZONE_FEES, COMMUNES_BY_WILAYA } from './data/wilayas.js';
 import { dict } from './data/translations.js';
 import { addToCart, renderCart, changeCartQty, removeFromCart, cartSubtotal, cartItemCount, toggleCartDrawer } from './modules/cart.js';
+import { openProductModal, closeProductModal, changeModalQty, modalAddToCart, modalBuyNow, renderModalPricing } from './modules/modal.js';
 
 // Compatibility bridge: index.html's existing inline functions
 // (addToCart, openProductModal, renderCart, applyProductFilters,
@@ -36,5 +37,14 @@ window.removeFromCart = removeFromCart;
 window.cartSubtotal = cartSubtotal;
 window.cartItemCount = cartItemCount;
 window.toggleCartDrawer = toggleCartDrawer;
+
+// Modal module functions, exposed for index.html's existing
+// onclick="..." attributes (e.g. onclick="openProductModal('p1')").
+window.openProductModal = openProductModal;
+window.closeProductModal = closeProductModal;
+window.changeModalQty = changeModalQty;
+window.modalAddToCart = modalAddToCart;
+window.modalBuyNow = modalBuyNow;
+window.renderModalPricing = renderModalPricing;
 
 console.log("Dar&Deco Phase 1 initialized");
