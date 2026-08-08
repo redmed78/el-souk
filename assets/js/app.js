@@ -1,6 +1,6 @@
 /* =========================================================
    assets/js/app.js
-   Phase 1 Step 7 — application entry point (bootstrap only).
+   Phase 1 Step 8 — application entry point (bootstrap only).
    This file does NOT yet contain any business logic.
    All existing functionality (cart, checkout, filters, B2B,
    AI chat, landing page, Supabase) still lives inline in
@@ -18,6 +18,7 @@ import { addToCart, renderCart, changeCartQty, removeFromCart, cartSubtotal, car
 import { openProductModal, closeProductModal, changeModalQty, modalAddToCart, modalBuyNow, renderModalPricing } from './modules/modal.js';
 import { applyProductFilters, toggleSwatch, toggleChip, activeCategories } from './modules/filters.js';
 import { setLang } from './modules/language.js';
+import { openLandingPage, closeLandingPage, initLandingPage, submitLandingOrder, updateLandingOrderTotal, landingShippingFee, selectLandPack, renderLandingCarousel, carouselGoTo, carouselStep, updateCarouselDots, landPlayVideo, landShowVideoFallback, initLandingCountdown, initLandingStickyCTA } from './modules/landing.js';
 
 // Compatibility bridge: index.html's existing inline functions
 // (addToCart, openProductModal, renderCart, applyProductFilters,
@@ -59,5 +60,23 @@ window.activeCategories = activeCategories;
 // Language module function, exposed for index.html's existing
 // onclick="..." attributes (e.g. onclick="setLang('ar')").
 window.setLang = setLang;
+
+// Landing module functions, exposed for index.html's existing
+// onclick/onsubmit="..." attributes (e.g. onclick="openLandingPage('p1')").
+window.openLandingPage = openLandingPage;
+window.closeLandingPage = closeLandingPage;
+window.initLandingPage = initLandingPage;
+window.submitLandingOrder = submitLandingOrder;
+window.updateLandingOrderTotal = updateLandingOrderTotal;
+window.landingShippingFee = landingShippingFee;
+window.selectLandPack = selectLandPack;
+window.renderLandingCarousel = renderLandingCarousel;
+window.carouselGoTo = carouselGoTo;
+window.carouselStep = carouselStep;
+window.updateCarouselDots = updateCarouselDots;
+window.landPlayVideo = landPlayVideo;
+window.landShowVideoFallback = landShowVideoFallback;
+window.initLandingCountdown = initLandingCountdown;
+window.initLandingStickyCTA = initLandingStickyCTA;
 
 console.log("Dar&Deco Phase 1 initialized");
