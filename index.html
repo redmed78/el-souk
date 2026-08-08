@@ -2130,44 +2130,6 @@
     trackEvent('toggle_mobile_menu', { open });
   }
 
-  // Fallback for broken images so alt text never sits exposed over the layout
-  function imgFallback(img) {
-    img.onerror = null;
-    img.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">' +
-      '<rect width="400" height="400" fill="%23F1ECE0"/>' +
-      '<g fill="none" stroke="%233A463E" stroke-width="6" opacity="0.35">' +
-      '<rect x="80" y="110" width="240" height="180" rx="10"/>' +
-      '<circle cx="150" cy="165" r="20"/>' +
-      '<path d="M80 260l70-60 50 40 60-70 60 90"/>' +
-      '</g></svg>'
-    );
-  }
-
-  // =========================================================
-  // TOAST NOTIFICATIONS — non-blocking, auto-dismissing
-  // =========================================================
-  function showToast(message, type = 'success', duration = 4000) {
-    const container = document.getElementById('toast-container');
-    if (!container) { alert(message); return; } // safety net if container is ever missing
-
-    const icon = type === 'success'
-      ? '<svg class="w-4 h-4 text-sage shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>'
-      : '<svg class="w-4 h-4 text-clay shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>';
-
-    const toast = document.createElement('div');
-    toast.className = 'toast toast-' + (type === 'success' ? 'success' : 'error');
-    toast.innerHTML = icon + '<span class="text-sm leading-snug">' + message + '</span>';
-    container.appendChild(toast);
-
-    requestAnimationFrame(() => toast.classList.add('show'));
-
-    setTimeout(() => {
-      toast.classList.remove('show');
-      setTimeout(() => toast.remove(), 300);
-    }, duration);
-  }
-
   // =========================================================
   // PRODUCT DETAIL MODAL
   // =========================================================
@@ -2397,11 +2359,6 @@
     });
   }
 
-  // The price slider's HTML default (max=8000) is narrower than the full catalog
-  // price range (up to 9 400 DA). Mirrors the same convention as activeCategories():
-  // until the shopper actually moves the slider, price does not filter anything.
-  let priceFilterTouched = false;
-
   function downloadProforma() {
     if (cartItemCount() === 0) {
       alert('Ajoutez des articles à votre panier pour générer un devis.');
@@ -2462,92 +2419,6 @@
       </body></html>
     `);
     win.document.close();
-  }
-
-  function populateWilayas() {
-    const select = document.getElementById('wilaya-select');
-    const codSelect = document.getElementById('cod-wilaya');
-    const b2bSelect = document.getElementById('b2b-wilaya');
-    const landSelect = document.getElementById('land-wilaya');
-    [select, codSelect, b2bSelect, landSelect].forEach(sel => {
-      if (!sel) return;
-      sel.innerHTML = '<option value="" data-i18n="wilaya_placeholder">Sélectionnez votre wilaya…</option>' +
-        WILAYAS.map(w => `<option value="${w.c}">${w.c} — ${w.n}</option>`).join('');
-    });
-  }
-
-  function communesForWilaya(code) {
-    if (COMMUNES_BY_WILAYA[code]) return COMMUNES_BY_WILAYA[code];
-    const w = WILAYAS.find(x => x.c === code);
-    return w ? [w.n] : []; // fallback: chef-lieu / wilaya name itself
-  }
-
-  function updateCommunesForWilaya(code, targetId = 'cod-commune') {
-    const sel = document.getElementById(targetId);
-    if (!sel) return;
-    const previousValue = sel.value;
-    if (!code) {
-      sel.innerHTML = '<option value="">Sélectionnez d\'abord une wilaya…</option>';
-      sel.disabled = true;
-      return;
-    }
-    const communes = communesForWilaya(code);
-    sel.innerHTML = '<option value="">Sélectionnez votre commune…</option>' +
-      communes.map(c => `<option value="${c}">${c}</option>`).join('');
-    sel.disabled = false;
-    if (communes.includes(previousValue)) sel.value = previousValue;
-  }
-
-  function currentZoneFee() {
-    const code = document.getElementById('wilaya-select').value;
-    const type = document.querySelector('input[name="delivery-type"]:checked').value;
-    if (!code) return null;
-    const w = WILAYAS.find(x => x.c === code);
-    if (!w) return null;
-    return ZONE_FEES[w.z][type === 'home' ? 'home' : 'stop'];
-  }
-
-  function updateOrderSummary() {
-    const subtotal = cartSubtotal();
-    const fee = currentZoneFee();
-
-    document.getElementById('sum-subtotal').textContent = subtotal.toLocaleString('fr-FR') + ' DA';
-
-    const feeEl = document.getElementById('sum-shipping');
-    if (fee === null) {
-      feeEl.textContent = 'À calculer';
-      feeEl.classList.add('text-ink2');
-    } else {
-      feeEl.textContent = fee.toLocaleString('fr-FR') + ' DA';
-      feeEl.classList.remove('text-ink2');
-    }
-
-    const total = subtotal + (fee || 0);
-    document.getElementById('sum-total').textContent = total.toLocaleString('fr-FR') + ' DA';
-
-    const b2bRow = document.getElementById('sum-b2b-row');
-    if (b2bMode) {
-      const savings = cartRetailSubtotal() - subtotal;
-      document.getElementById('sum-b2b-savings').textContent = savings.toLocaleString('fr-FR') + ' DA';
-      b2bRow.classList.remove('hidden');
-      b2bRow.classList.add('flex');
-    } else {
-      b2bRow.classList.add('hidden');
-      b2bRow.classList.remove('flex');
-    }
-
-    // keep the COD wilaya select in sync with the delivery-calculator select
-    const wilayaVal = document.getElementById('wilaya-select').value;
-    if (document.getElementById('cod-wilaya').value !== wilayaVal) {
-      document.getElementById('cod-wilaya').value = wilayaVal;
-    }
-    updateCommunesForWilaya(wilayaVal);
-  }
-
-  function syncWilayaFromCod() {
-    document.getElementById('wilaya-select').value = document.getElementById('cod-wilaya').value;
-    updateCommunesForWilaya(document.getElementById('cod-wilaya').value);
-    updateOrderSummary();
   }
 
   // NOTE: placeOrder(e) — the #cod-form submit handler — is defined in the
@@ -2646,153 +2517,10 @@
   // =========================================================
   // AI SMART SHOPPING ASSISTANT (simulated — ready for API hookup)
   // =========================================================
-  let aiChatStarted = false;
-  const AI_LANG = { fr: 'fr', ar: 'ar' };
-
-  const AI_REPLIES = {
-    fr: {
-      'Rangement Cuisine': "Pour la cuisine, je recommande notre set de boîtes hermétiques, nos paniers de conservation et nos organiseurs de tiroir. Voulez-vous que je vous montre nos meilleures ventes rangement dans la catégorie Cuisine ?",
-      'Packs Salle de Bain': "Nous avons des packs complets salle de bain (serviettes + tapis + accessoires assortis) à partir de 4 500 DA. Souhaitez-vous un pack pour 1 personne ou pour toute la famille ?",
-      'Demande de prix de gros': "Activez le mode Grossiste (B2B) en haut de la page pour voir les tarifs de gros et quantités minimums sur tous nos produits. Je peux aussi vous mettre en relation avec notre équipe commerciale — quel volume recherchez-vous ?",
-      'Suivre ma commande': "Pour suivre votre commande, communiquez-moi votre numéro de commande ou le numéro de téléphone utilisé lors de l'achat, et je vérifie son statut.",
-      fallback: "Merci pour votre message ! Un conseiller humain pourra vous répondre plus en détail très prochainement — cette démo illustre l'interface, prête à être connectée à notre assistant IA en temps réel."
-    },
-    ar: {
-      'تنظيم المطبخ': 'بالنسبة للمطبخ، أنصح بعلب الحفظ المحكمة والسلال ومنظمات الأدراج. هل تريد أن أعرض لك الأكثر مبيعاً في فئة المطبخ؟',
-      'باقات الحمام': 'لدينا باقات حمام كاملة (مناشف + سجادة + إكسسوارات متناسقة) ابتداءً من 4500 دج. هل تفضل باقة لشخص واحد أم للعائلة؟',
-      'طلب سعر جملة': 'فعّل وضع الجملة (B2B) أعلى الصفحة لعرض أسعار الجملة والكميات الدنيا. يمكنني أيضاً تحويلك لفريق المبيعات — ما هي الكمية التي تبحث عنها؟',
-      'تتبع طلبي': 'لتتبع طلبك، يرجى إرسال رقم الطلب أو رقم الهاتف المستخدم عند الشراء، وسأتحقق من حالته.',
-      fallback: 'شكراً لرسالتك! سيتمكن أحد مستشارينا من الرد عليك قريباً — هذا العرض التوضيحي يمثل الواجهة، وهي جاهزة للربط بمساعد ذكاء اصطناعي حقيقي.'
-    }
-  };
-
-  function currentAILang() {
-    return document.documentElement.lang === 'ar' ? 'ar' : 'fr';
-  }
 
   setTimeout(() => {
-    if (!aiChatStarted) document.getElementById('ai-fab-dot').classList.remove('hidden');
+    if (!window.aiChatStarted) document.getElementById('ai-fab-dot').classList.remove('hidden');
   }, 4000);
-
-  function toggleAIChat(open) {
-    const panel = document.getElementById('ai-chat-panel');
-    const fabDot = document.getElementById('ai-fab-dot');
-    if (open) {
-      panel.classList.add('open');
-      fabDot.classList.add('hidden');
-      if (!aiChatStarted) {
-        aiChatStarted = true;
-        const greet = dict[currentAILang()].ai_greeting || dict.fr.ai_greeting;
-        appendAIMessage(greet, 'bot');
-      }
-      setTimeout(() => document.getElementById('ai-input').focus(), 200);
-    } else {
-      panel.classList.remove('open');
-    }
-  }
-
-  function appendAIMessage(text, from) {
-    const wrap = document.getElementById('ai-messages');
-    const row = document.createElement('div');
-    row.className = 'flex ' + (from === 'user' ? 'justify-end' : 'justify-start');
-    const bubble = document.createElement('div');
-    bubble.className = (from === 'user' ? 'ai-bubble-user' : 'ai-bubble-bot') + ' max-w-[80%] px-3.5 py-2.5 text-sm leading-relaxed';
-    if (from === 'user') {
-      bubble.textContent = text; // user-generated content: rendered as plain text, never parsed as HTML
-    } else {
-      bubble.innerHTML = text; // bot replies are static, developer-authored strings (AI_REPLIES / dict) — unchanged
-    }
-    row.appendChild(bubble);
-    wrap.appendChild(row);
-    wrap.scrollTop = wrap.scrollHeight;
-  }
-
-  function showAITyping() {
-    const wrap = document.getElementById('ai-messages');
-    const row = document.createElement('div');
-    row.id = 'ai-typing-row';
-    row.className = 'flex justify-start';
-    row.innerHTML = `<div class="ai-bubble-bot px-4 py-3 ai-typing"><span></span><span></span><span></span></div>`;
-    wrap.appendChild(row);
-    wrap.scrollTop = wrap.scrollHeight;
-  }
-
-  function removeAITyping() {
-    const row = document.getElementById('ai-typing-row');
-    if (row) row.remove();
-  }
-
-  function simulateAIReply(userText) {
-    showAITyping();
-    setTimeout(() => {
-      removeAITyping();
-      const lang = currentAILang();
-      const replies = AI_REPLIES[lang] || AI_REPLIES.fr;
-      const reply = replies[userText] || replies.fallback;
-      appendAIMessage(reply, 'bot');
-    }, 700 + Math.random() * 500);
-  }
-
-  function sendAIPrompt(text) {
-    appendAIMessage(text, 'user');
-    simulateAIReply(text.trim());
-  }
-
-  function handleAISubmit(e) {
-    e.preventDefault();
-    const input = document.getElementById('ai-input');
-    const text = input.value.trim();
-    if (!text) return;
-    appendAIMessage(text, 'user');
-    input.value = '';
-    simulateAIReply(text);
-  }
-
-  // ---- Mobile filter drawer ----
-  function toggleFilterDrawer(open) {
-    const drawer = document.getElementById('filter-drawer');
-    const overlay = document.getElementById('filter-overlay');
-    if (open) {
-      overlay.classList.remove('hidden');
-      requestAnimationFrame(() => drawer.classList.remove('translate-y-full'));
-      document.body.style.overflow = 'hidden';
-    } else {
-      drawer.classList.add('translate-y-full');
-      document.body.style.overflow = '';
-      setTimeout(() => overlay.classList.add('hidden'), 300);
-    }
-  }
-
-  // ---- Dual-thumb price range slider ----
-  (function initPriceSlider() {
-    const min = document.getElementById('price-min');
-    const max = document.getElementById('price-max');
-    const fill = document.getElementById('price-fill');
-    const minLabel = document.getElementById('price-min-label');
-    const maxLabel = document.getElementById('price-max-label');
-    if (!min || !max) return;
-
-    function update() {
-      let minVal = parseInt(min.value);
-      let maxVal = parseInt(max.value);
-      if (minVal > maxVal - 500) { minVal = maxVal - 500; min.value = minVal; }
-      const range = parseInt(min.max) - parseInt(min.min);
-      const left = ((minVal - min.min) / range) * 100;
-      const right = 100 - ((maxVal - min.min) / range) * 100;
-      fill.style.left = left + '%';
-      fill.style.right = right + '%';
-      minLabel.value = minVal.toLocaleString('fr-FR');
-      maxLabel.value = maxVal.toLocaleString('fr-FR');
-    }
-    function updateAndFilter() {
-      priceFilterTouched = true;
-      update();
-      if (typeof applyProductFilters === 'function') applyProductFilters();
-    }
-    min.addEventListener('input', updateAndFilter);
-    max.addEventListener('input', updateAndFilter);
-    update(); // initial paint only — does not filter, so the default slider value never hides products on first load
-  })();
 
 </script>
 
