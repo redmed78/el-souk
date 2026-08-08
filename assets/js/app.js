@@ -1,6 +1,6 @@
 /* =========================================================
    assets/js/app.js
-   Phase 1 Step 8 — application entry point (bootstrap only).
+   Phase 1 Step 10 — application entry point (bootstrap only).
    This file does NOT yet contain any business logic.
    All existing functionality (cart, checkout, filters, B2B,
    AI chat, landing page, Supabase) still lives inline in
@@ -19,6 +19,8 @@ import { openProductModal, closeProductModal, changeModalQty, modalAddToCart, mo
 import { applyProductFilters, toggleSwatch, toggleChip, activeCategories } from './modules/filters.js';
 import { setLang } from './modules/language.js';
 import { openLandingPage, closeLandingPage, initLandingPage, submitLandingOrder, updateLandingOrderTotal, landingShippingFee, selectLandPack, renderLandingCarousel, carouselGoTo, carouselStep, updateCarouselDots, landPlayVideo, landShowVideoFallback, initLandingCountdown, initLandingStickyCTA } from './modules/landing.js';
+import { currentAILang, toggleAIChat, appendAIMessage, showAITyping, removeAITyping, simulateAIReply, sendAIPrompt, handleAISubmit } from './modules/aiChat.js';
+import { imgFallback, showToast, populateWilayas, communesForWilaya, updateCommunesForWilaya, currentZoneFee, updateOrderSummary, syncWilayaFromCod, toggleFilterDrawer } from './modules/data.js';
 
 // Compatibility bridge: index.html's existing inline functions
 // (addToCart, openProductModal, renderCart, applyProductFilters,
@@ -78,5 +80,30 @@ window.landPlayVideo = landPlayVideo;
 window.landShowVideoFallback = landShowVideoFallback;
 window.initLandingCountdown = initLandingCountdown;
 window.initLandingStickyCTA = initLandingStickyCTA;
+
+// AI Chat module functions, exposed for index.html's existing
+// onclick/onsubmit="..." attributes (e.g. onclick="toggleAIChat(true)").
+window.currentAILang = currentAILang;
+window.toggleAIChat = toggleAIChat;
+window.appendAIMessage = appendAIMessage;
+window.showAITyping = showAITyping;
+window.removeAITyping = removeAITyping;
+window.simulateAIReply = simulateAIReply;
+window.sendAIPrompt = sendAIPrompt;
+window.handleAISubmit = handleAISubmit;
+
+// Data module functions, exposed for index.html's existing bare
+// references and onclick="..." attributes (e.g. onclick="toggleFilterDrawer(true)",
+// or placeOrder()/resetLocationFields()/DOMContentLoaded calling
+// populateWilayas()/updateOrderSummary()/currentZoneFee() etc. directly).
+window.imgFallback = imgFallback;
+window.showToast = showToast;
+window.populateWilayas = populateWilayas;
+window.communesForWilaya = communesForWilaya;
+window.updateCommunesForWilaya = updateCommunesForWilaya;
+window.currentZoneFee = currentZoneFee;
+window.updateOrderSummary = updateOrderSummary;
+window.syncWilayaFromCod = syncWilayaFromCod;
+window.toggleFilterDrawer = toggleFilterDrawer;
 
 console.log("Dar&Deco Phase 1 initialized");
