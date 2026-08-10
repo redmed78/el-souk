@@ -98,3 +98,14 @@ export function toggleChip(el) {
     });
   }
 
+  // ---- Sort dropdown ("Popularité" et al.) — was previously unwired: no id,
+  // no onchange, no listener anywhere, so selecting it had zero effect.
+  // Located via the existing data-i18n="sort_popular" option rather than
+  // adding any id/attribute to the markup. "Popularité" is the catalog's
+  // default/natural order (no popularity field exists in product data, and
+  // none is fabricated here); wiring this listener makes that default state
+  // actually apply/re-apply through the existing, unmodified filter pipeline.
+  document.querySelectorAll('option[data-i18n="sort_popular"]').forEach(opt => {
+    const select = opt.closest('select');
+    if (select) select.addEventListener('change', () => applyProductFilters());
+  });
