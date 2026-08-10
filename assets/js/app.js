@@ -1,6 +1,6 @@
 /* =========================================================
    assets/js/app.js
-   Phase 1 Step 10 — application entry point (bootstrap only).
+   Phase 2 Step 2 — application entry point (bootstrap only).
    This file does NOT yet contain any business logic.
    All existing functionality (cart, checkout, filters, B2B,
    AI chat, landing page, Supabase) still lives inline in
@@ -21,6 +21,8 @@ import { setLang } from './modules/language.js';
 import { openLandingPage, closeLandingPage, initLandingPage, submitLandingOrder, updateLandingOrderTotal, landingShippingFee, selectLandPack, renderLandingCarousel, carouselGoTo, carouselStep, updateCarouselDots, landPlayVideo, landShowVideoFallback, initLandingCountdown, initLandingStickyCTA } from './modules/landing.js';
 import { currentAILang, toggleAIChat, appendAIMessage, showAITyping, removeAITyping, simulateAIReply, sendAIPrompt, handleAISubmit } from './modules/aiChat.js';
 import { imgFallback, showToast, populateWilayas, communesForWilaya, updateCommunesForWilaya, currentZoneFee, updateOrderSummary, syncWilayaFromCod, toggleFilterDrawer } from './modules/data.js';
+import { analytics } from './services/capabilities/analytics.js';
+import { order } from './services/capabilities/order.js';
 
 // Compatibility bridge: index.html's existing inline functions
 // (addToCart, openProductModal, renderCart, applyProductFilters,
@@ -105,5 +107,19 @@ window.currentZoneFee = currentZoneFee;
 window.updateOrderSummary = updateOrderSummary;
 window.syncWilayaFromCod = syncWilayaFromCod;
 window.toggleFilterDrawer = toggleFilterDrawer;
+
+// Phase 2 Step 2 — Abstract Provider Layer compatibility bridges.
+// window.trackEvent: required so index.html's existing bare
+// trackEvent(...) calls (and onclick="...trackEvent(...)..."
+// attributes, across ~30 call sites) keep working unchanged.
+window.trackEvent = analytics.track;
+// window.order: required so placeOrder() in index.html (a classic
+// script, not converted to a module per rule 7 — "only change the
+// call site") can call order.create(orderHeader, orderItems) at
+// its one call site. This is the one necessary exception beyond
+// window.trackEvent — see the Phase 2 Step 2 delivery report for
+// the full reasoning. window.analytics/_supabase/SESSION_ID are
+// deliberately NOT exposed anywhere.
+window.order = order;
 
 console.log("Dar&Deco Phase 1 initialized");
