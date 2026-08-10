@@ -28,14 +28,24 @@
      - `PRODUCTS`, `WILAYAS`, `ZONE_FEES` (exposed on window
        in Step 3)
      - `b2bMode` (let, B2B pricing toggle state)
-     - `showToast()`, `trackEvent()`, `submitOrderToSupabase()`,
+     - `showToast()`, `trackEvent()`,
        `resetLandingLocationFields()` (function declarations
-       left in index.html — submitOrderToSupabase() in
-       particular is Supabase logic and was not touched)
+       left in index.html)
    No reference was rewritten to use window/globalThis.
+
+   ---------------------------------------------------------
+   UPDATED IN PHASE 2 STEP 2: submitLandingOrder()'s call to
+   submitOrderToSupabase() (a bare index.html reference) was
+   replaced with order.create(), imported below from the new
+   Abstract Provider Layer capability. This is a proper ES
+   module import — no global/window dependency needed here,
+   since landing.js is already a module. No other logic in
+   submitLandingOrder() was touched.
+   ---------------------------------------------------------
 ========================================================= */
 
 import { closeProductModal } from './modal.js';
+import { order } from '../services/capabilities/order.js';
 
   // Sends the shopper straight into the dynamic single-product landing page —
   // toggles the in-page view (#landing-view) rather than navigating to a file,
@@ -359,7 +369,7 @@ export async function submitLandingOrder(e) {
     }
 
     try {
-      const orderId = await submitOrderToSupabase(orderHeader, orderItems);
+      const orderId = await order.create(orderHeader, orderItems);
 
       alert('SUCCESS: Order Saved!'); // fires BEFORE any confirmation UI
 
