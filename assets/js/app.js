@@ -23,6 +23,7 @@ import { currentAILang, toggleAIChat, appendAIMessage, showAITyping, removeAITyp
 import { imgFallback, showToast, populateWilayas, communesForWilaya, updateCommunesForWilaya, currentZoneFee, updateOrderSummary, syncWilayaFromCod, toggleFilterDrawer } from './modules/data.js';
 import { analytics } from './services/capabilities/analytics.js';
 import { order } from './services/capabilities/order.js';
+import { product } from './services/capabilities/product.js';
 
 // Compatibility bridge: index.html's existing inline functions
 // (addToCart, openProductModal, renderCart, applyProductFilters,
@@ -113,13 +114,39 @@ window.toggleFilterDrawer = toggleFilterDrawer;
 // trackEvent(...) calls (and onclick="...trackEvent(...)..."
 // attributes, across ~30 call sites) keep working unchanged.
 window.trackEvent = analytics.track;
-// window.order: required so placeOrder() in index.html (a classic
-// script, not converted to a module per rule 7 — "only change the
-// call site") can call order.create(orderHeader, orderItems) at
-// its one call site. This is the one necessary exception beyond
-// window.trackEvent — see the Phase 2 Step 2 delivery report for
-// the full reasoning. window.analytics/_supabase/SESSION_ID are
-// deliberately NOT exposed anywhere.
-window.order = order;
+// window.order: a classic <script> (placeOrder() in index.html)
+// has no `import` mechanism, so it cannot reach an ES module's
+// exports except via the shared global object — there is no way
+// around a global reference here without either converting
+// placeOrder() into a module or rewriting its call site, both of
+// which are explicitly out of scope. This is narrowed to the
+// smallest possible surface: a frozen object exposing only the
+// one method placeOrder() actually calls (`.create`), not the
+// full `order` capability object, and not writable. Call site
+// (`order.create(orderHeader, orderItems)`) is unchanged.
+window.order = Object.freeze({ create: order.create });
+
+// Phase 2 Step 3 — Dynamic Data Integration (product capability).
+// window.product: exposed for future use, per this step's spec.
+window.product = product;
+
+// Integration approach (documented, see Step 3 delivery report for
+// full rationale): rather than converting protected, synchronous
+// functions (renderCardPrices, openProductModal, applyProductFilters,
+// cart/landing code — none of which are in scope to modify this step)
+// into async functions, product.getAll() is resolved ONCE here at
+// bootstrap. When it resolves — with Supabase data if available, or
+// the static PRODUCTS fallback otherwise, exactly per product.js's
+// own fallback logic — window.PRODUCTS is refreshed to that result,
+// and the existing (unmodified) rendering functions are re-invoked so
+// the already-visible grid/cart reflect it. Every function that reads
+// PRODUCTS/window.PRODUCTS continues to do so synchronously, with its
+// exact original signature and behavior, whether the resolved data is
+// dynamic or the static fallback.
+product.getAll().then(resolved => {
+  window.PRODUCTS = resolved;
+  if (typeof window.renderCardPrices === 'function') window.renderCardPrices();
+  if (typeof window.renderCart === 'function') window.renderCart();
+});
 
 console.log("Dar&Deco Phase 1 initialized");
